@@ -1,23 +1,42 @@
 import requests
-from time import sleep
+from rich.progress import track
+from urllib.parse import quote
 from settings import *
-
-headers = {
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) ",
-    "Cookie": LOGIN_COOKIE
-}
-
-# artwork = {
-#     "title": "",
-#     "user_name": "",
-#     "p_id": "",
-#     "referer": ""
-# }
+from utils import *
 
 
-def get_weekly_artworks(page=1, num=0):
-    res = requests.get(
-        f"https://www.pixiv.net/ranking.php?mode=weekly&p={page}&format=json")
+def get_original_artworks(page=1, num=0):
+    return get_rank_artworks("original", page, num)
+
+
+def get_rookie_artworks(page=1, num=0):
+    return get_rank_artworks("rookie", page, num)
+
+
+def get_monthly_artworks(page=1, num=0):
+    return get_rank_artworks("monthly", page, num)
+
+
+def get_weekly_artworks(page=1, num=0, r18=False):
+    return get_rank_artworks("weekly", page, num, r18)
+
+
+def get_daily_artworks(page=1, num=0, r18=False):
+    return get_rank_artworks("daily", page, num, r18)
+
+
+def get_daily_ai_artworks(page=1, num=0, r18=False):
+    return get_rank_artworks("daily_ai", page, num, r18)
+
+
+def get_rank_artworks(keyword, page=1, num=0, r18=False):
+    if r18:
+        res = requests.get(
+            f"https://www.pixiv.net/ranking.php?mode={keyword}_r18&p={page}&format=json", headers=HEADERS)
+    else:
+        res = requests.get(
+            f"https://www.pixiv.net/ranking.php?mode={keyword}&p={page}&format=json", headers=HEADERS)
+
     datas = res.json()["contents"]
 
     if (not num) or num > len(datas):
@@ -34,39 +53,38 @@ def get_weekly_artworks(page=1, num=0):
         artworks.append(artwork)
     return artworks
 
+# order:
+# - date_d: sort by newest
+# - date: sort by oldest
+# - popular_d: sort by popular
+def get_search_artworks(keyword, page=1, num=0, order="date_d", r18=False):
+    if r18:
+        res = requests.get(
+            f"https://www.pixiv.net/ajax/search/artworks/{quote(keyword)}?word={quote(keyword)}&order=date_d&mode=all&p=1&s_mode=s_tag&type=all&lang=zh&mode=r18", headers=HEADERS)
+    else:
+        res = requests.get(
+            f"https://www.pixiv.net/ajax/search/artworks/{quote(keyword)}?word={quote(keyword)}&order=date_d&mode=all&p=1&s_mode=s_tag&type=all&lang=zh&mode=safe", headers=HEADERS)
 
-# An artwork has one or more than one pictures
-def get_image_urls(artwork):
-    res_artwork = requests.get(
-        f"https://www.pixiv.net/ajax/illust/{artwork['p_id']}/pages?lang=zh", headers=headers,)
-    artwork_datas = res_artwork.json()["body"]
-    image_urls = []
-    for image in artwork_datas:
-        image_urls.append(image["urls"]["original"])
-    return image_urls
+    datas = res.json()["body"]["illustManga"]["data"]
 
+    if (not num) or num > len(datas):
+        num = len(datas)
 
-# download one picture
-def download_image(artwork, savepath="output/"):
-    sleep(1)
-    # if there's no referer in headers, the pixiv won't return the picture
-    download_headers = headers
-    download_headers["referer"] = artwork["referer"]
-    image_urls = get_image_urls(artwork)
-    for image_url in image_urls:
-        try:
-            resp_image = requests.get(image_url, headers=download_headers)
-        except Exception as e:
-            print(e)
-            return
-        file_name = image_url.split("/")[-1]
-        with open(savepath+file_name, "wb") as file:
-            file.write(resp_image.content)
-    print(f"Download {artwork['title']} successfully!")
+    artworks = []
+    for data in datas[0:num]:
+        artwork = {
+            "title": data["title"],
+            "user_name": data["userName"],
+            "p_id": data["id"],
+            "referer": f"https://www.pixiv.net/artworks/{data['id']}"
+        }
+        artworks.append(artwork)
+    return artworks
 
 
+# Test
 if __name__ == "__main__":
-    artworks = get_weekly_artworks(1, 10)
+    artworks = get_search_artworks(keyword="genshin impact", num=10)
     urls = []
-    for artwork in artworks:
-        download_image(artwork, "output/weekly/")
+    for artwork in track(artworks, description="Downloading",):
+        download_image_from_artwork(artwork, "output/search/")
