@@ -21,8 +21,8 @@ def get_image_urls(artwork):
     return image_urls
 
 
-# download one picture
-def download_image_from_artwork(artwork, savepath="output/"):
+# download pictures from an artwork
+def download_image(artwork, savepath="output/"):
     sleep(1)
     # if there's no referer in headers, the pixiv won't return the picture
     download_headers = HEADERS

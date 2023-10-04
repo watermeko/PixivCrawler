@@ -84,7 +84,7 @@ def get_search_artworks(keyword, page=1, num=0, order="date_d", r18=False):
 
 # Test
 if __name__ == "__main__":
-    artworks = get_search_artworks(keyword="genshin impact", num=10)
+    artworks = get_search_artworks(keyword="genshin impact", num=5)
     urls = []
     for artwork in track(artworks, description="Downloading",):
-        download_image_from_artwork(artwork, "output/search/")
+        download_image(artwork, "output/search/")

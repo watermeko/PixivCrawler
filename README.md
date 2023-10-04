@@ -31,7 +31,7 @@ HEADERS = {
 DOWNLOAD_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) ",
     "Cookie": LOGIN_COOKIE
-    "referer": "referer of artworks"
+    "referer": "referer of artwork"
 }
 ```
 
