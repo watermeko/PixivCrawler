@@ -1,4 +1,5 @@
 from time import sleep
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import requests
 from settings import HEADERS
 
@@ -11,6 +12,8 @@ from settings import HEADERS
 # }
 
 # An artwork has one or more than one pictures
+
+
 def get_image_urls(artwork):
     res_artwork = requests.get(
         f"https://www.pixiv.net/ajax/illust/{artwork['p_id']}/pages?lang=zh", headers=HEADERS,)
@@ -33,9 +36,16 @@ def download_image(artwork, savepath="output/"):
             resp_image = requests.get(image_url, headers=download_headers)
         except Exception as e:
             print(f"Failed to download {artwork['title']} due to {e}")
-            return
+            return False
         file_name = image_url.split("/")[-1]
         with open(savepath+file_name, "wb") as file:
             file.write(resp_image.content)
+        return True
 
 
+def download_images(artworks, savepath):
+    pool = ThreadPoolExecutor(max_workers=16)
+    tasks = [pool.submit(download_image, artwork, savepath)
+             for artwork in artworks]
+    if (as_completed(tasks)):
+        pool.shutdown()

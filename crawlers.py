@@ -1,5 +1,5 @@
 import requests
-from rich.progress import track
+import time
 from urllib.parse import quote
 from settings import *
 from utils import *
@@ -84,7 +84,8 @@ def get_search_artworks(keyword, page=1, num=0, order="date_d", r18=False):
 
 # Test
 if __name__ == "__main__":
-    artworks = get_search_artworks(keyword="genshin impact", num=5)
-    urls = []
-    for artwork in track(artworks, description="Downloading",):
-        download_image(artwork, "output/search/")
+    artworks = get_weekly_artworks()
+    t1 = time.time()
+    download_images(artworks,"output/weekly/")
+    t2 = time.time()
+    print(f"Time cost: {t2-t1}\n")
