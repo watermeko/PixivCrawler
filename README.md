@@ -6,11 +6,9 @@
 
 - [x] 下载搜索的图片
 
-- [ ] 下载某画师的图片
+- [x] 下载某画师的图片
 
 - [ ] 图形界面
-
-- [x] 显示下载进度（暂且使用rich.progress库）
 
 - [x] 多线程下载
 
@@ -35,7 +33,7 @@ DOWNLOAD_HEADERS = {
 }
 ```
 
-# 关于LOGIN_COOKIE
+## 关于LOGIN_COOKIE
 
 登录www.pixiv.net，并打开开发者模式。
 
