@@ -68,8 +68,7 @@ def download_image(artwork, savepath="output/",max_retry=3):
 
 
 def download_images(artworks, savepath):
-    pool = ThreadPoolExecutor(max_workers=16)
-    tasks = [pool.submit(download_image, artwork, savepath)
-             for artwork in artworks]
-    if (as_completed(tasks)):
-        pool.shutdown()
+    with ThreadPoolExecutor(max_workers=16) as pool:
+        for artwork in artworks:
+            pool.submit(download_image, artwork, savepath)  
+                
