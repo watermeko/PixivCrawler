@@ -1,8 +1,7 @@
 import requests
 import time
 from urllib.parse import quote
-from urllib3 import disable_warnings,exceptions
-from settings import *
+from urllib3 import disable_warnings, exceptions
 from utils import *
 
 disable_warnings(exceptions.InsecureRequestWarning)
@@ -35,10 +34,10 @@ def get_daily_ai_artworks(page=1, num=0, r18=False):
 def get_rank_artworks(keyword, page=1, num=0, r18=False):
     if r18:
         res = requests.get(
-            f"https://www.pixiv.net/ranking.php?mode={keyword}_r18&p={page}&format=json", headers=HEADERS,verify=False)
+            f"https://www.pixiv.net/ranking.php?mode={keyword}_r18&p={page}&format=json", headers=HEADERS, verify=False)
     else:
         res = requests.get(
-            f"https://www.pixiv.net/ranking.php?mode={keyword}&p={page}&format=json", headers=HEADERS,verify=False)
+            f"https://www.pixiv.net/ranking.php?mode={keyword}&p={page}&format=json", headers=HEADERS, verify=False)
 
     datas = res.json()["contents"]
 
@@ -67,10 +66,10 @@ def get_search_artworks(keyword, page=1, num=0, order="date_d", r18=False):
     """
     if r18:
         res = requests.get(
-            f"https://www.pixiv.net/ajax/search/artworks/{quote(keyword)}?word={quote(keyword)}&order=date_d&mode=all&p=1&s_mode=s_tag&type=all&lang=zh&mode=r18", headers=HEADERS,verify=False)
+            f"https://www.pixiv.net/ajax/search/artworks/{quote(keyword)}?word={quote(keyword)}&order=date_d&mode=all&p=1&s_mode=s_tag&type=all&lang=zh&mode=r18", headers=HEADERS, verify=False)
     else:
         res = requests.get(
-            f"https://www.pixiv.net/ajax/search/artworks/{quote(keyword)}?word={quote(keyword)}&order=date_d&mode=all&p=1&s_mode=s_tag&type=all&lang=zh&mode=safe", headers=HEADERS,verify=False)
+            f"https://www.pixiv.net/ajax/search/artworks/{quote(keyword)}?word={quote(keyword)}&order=date_d&mode=all&p=1&s_mode=s_tag&type=all&lang=zh&mode=safe", headers=HEADERS, verify=False)
 
     datas = res.json()["body"]["illustManga"]["data"]
 
@@ -89,13 +88,13 @@ def get_search_artworks(keyword, page=1, num=0, order="date_d", r18=False):
     return artworks
 
 
-def get_user_artworks(user_id,num=0,getTitle=False):
+def get_user_artworks(user_id, num=0, getTitle=False):
     """
     Parameters:
         getTitle: get title is time consuming and unstable
     """
     res = requests.get(
-        f"https://www.pixiv.net/ajax/user/{user_id}/profile/all?lang=zh",verify=False,headers=HEADERS
+        f"https://www.pixiv.net/ajax/user/{user_id}/profile/all?lang=zh", verify=False, headers=HEADERS
     )
     datas = res.json()["body"]
     illusts = datas["illusts"]
@@ -121,7 +120,6 @@ def get_user_artworks(user_id,num=0,getTitle=False):
         artworks.append(artwork)
     return artworks
 
-    
 
 # Test
 if __name__ == "__main__":
@@ -130,4 +128,3 @@ if __name__ == "__main__":
     download_images(artworks, "output/user/")
     t2 = time.time()
     print(f"Time cost: {t2-t1}\n")
-    

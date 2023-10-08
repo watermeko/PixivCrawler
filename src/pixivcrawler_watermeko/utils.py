@@ -1,9 +1,8 @@
 from time import sleep
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor
 import requests
-from urllib3 import disable_warnings,exceptions
+from urllib3 import disable_warnings, exceptions
 import re
-from settings import HEADERS
 
 # Structure of artwork
 # artwork = {
@@ -12,25 +11,34 @@ from settings import HEADERS
 #     "p_id": "",
 #     "referer": ""
 # }
+HEADERS = {
+    "Cookie": "",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36",
+}
 
 disable_warnings(exceptions.InsecureRequestWarning)
 
 
-# An artwork has one or more than one pictures
+def set_headers(cookie):
+    HEADERS["Cookie"] = cookie
+
 # TODO: retry ability
 def get_title(p_id):
     """
     Get artwork title from p_id
     """
     res = requests.get(
-        f"https://www.pixiv.net/artworks/{p_id}",verify=False,headers=HEADERS)
+        f"https://www.pixiv.net/artworks/{p_id}", verify=False, headers=HEADERS)
     title_match = re.search(r'<title>(.*?)</title>', res.text)
     return title_match.group(1)
+
+# An artwork has one or more than one pictures
 
 
 def get_image_urls(artwork):
     res_artwork = requests.get(
-        f"https://www.pixiv.net/ajax/illust/{artwork['p_id']}/pages?lang=zh", headers=HEADERS,verify=False)
+        f"https://www.pixiv.net/ajax/illust/{artwork['p_id']}/pages?lang=zh", headers=HEADERS, verify=False)
     artwork_datas = res_artwork.json()["body"]
     image_urls = []
     for image in artwork_datas:
@@ -40,7 +48,9 @@ def get_image_urls(artwork):
 
 retry_list = {}
 # download pictures from an artwork
-def download_image(artwork, savepath="output/",max_retry=3):
+
+
+def download_image(artwork, savepath="output/", max_retry=3):
     global retry_list
     # if there's no referer in headers, the pixiv won't return the picture
     download_headers = HEADERS
@@ -50,12 +60,14 @@ def download_image(artwork, savepath="output/",max_retry=3):
         if not image_url in retry_list:
             retry_list[image_url] = 0
         try:
-            resp_image = requests.get(image_url, headers=download_headers,verify=False)
+            resp_image = requests.get(
+                image_url, headers=download_headers, verify=False)
         except Exception as e:
             if retry_list[image_url] < max_retry:
-                print(f"Failed to download {artwork['title']}.Begin to retry.Retry times:{retry_list[image_url]}")
+                print(
+                    f"Failed to download {artwork['title']}.Begin to retry.Retry times:{retry_list[image_url]}")
                 retry_list[image_url] += 1
-                download_image(artwork,savepath,max_retry)
+                download_image(artwork, savepath, max_retry)
             else:
                 print(f"Failed to download {artwork['title']}.Stop retrying.")
                 del retry_list[image_url]
@@ -70,5 +82,4 @@ def download_image(artwork, savepath="output/",max_retry=3):
 def download_images(artworks, savepath):
     with ThreadPoolExecutor(max_workers=16) as pool:
         for artwork in artworks:
-            pool.submit(download_image, artwork, savepath)  
-                
+            pool.submit(download_image, artwork, savepath)
