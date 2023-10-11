@@ -1,8 +1,7 @@
 import requests
-import time
 from urllib.parse import quote
 from urllib3 import disable_warnings, exceptions
-from utils import *
+from pixivcrawler_watermeko.utils import HEADERS,get_title
 
 disable_warnings(exceptions.InsecureRequestWarning)
 
@@ -121,10 +120,3 @@ def get_user_artworks(user_id, num=0, getTitle=False):
     return artworks
 
 
-# Test
-if __name__ == "__main__":
-    artworks = get_user_artworks(19076791)
-    t1 = time.time()
-    download_images(artworks, "output/user/")
-    t2 = time.time()
-    print(f"Time cost: {t2-t1}\n")
