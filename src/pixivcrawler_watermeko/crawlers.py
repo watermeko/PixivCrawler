@@ -1,7 +1,8 @@
 import requests
 from urllib.parse import quote
 from urllib3 import disable_warnings, exceptions
-from pixivcrawler_watermeko.utils import HEADERS,get_title
+from pixivcrawler_watermeko.utils import HEADERS,get_title,Artwork
+from typing import List
 
 disable_warnings(exceptions.InsecureRequestWarning)
 
@@ -30,7 +31,7 @@ def get_daily_ai_artworks(page=1, num=0, r18=False):
     return get_rank_artworks("daily_ai", page, num, r18)
 
 
-def get_rank_artworks(keyword, page=1, num=0, r18=False):
+def get_rank_artworks(keyword, page=1, num=0, r18=False) -> List[Artwork]:
     if r18:
         res = requests.get(
             f"https://www.pixiv.net/ranking.php?mode={keyword}_r18&p={page}&format=json", headers=HEADERS, verify=False)
@@ -55,7 +56,7 @@ def get_rank_artworks(keyword, page=1, num=0, r18=False):
     return artworks
 
 
-def get_search_artworks(keyword, page=1, num=0, order="date_d", r18=False):
+def get_search_artworks(keyword, page=1, num=0, order="date_d", r18=False) -> List[Artwork]:
     """
     Prameters: 
         order(str):
@@ -87,7 +88,7 @@ def get_search_artworks(keyword, page=1, num=0, order="date_d", r18=False):
     return artworks
 
 
-def get_user_artworks(user_id, num=0, getTitle=False):
+def get_user_artworks(user_id, num=0, getTitle=False) -> List[Artwork]:
     """
     Parameters:
         getTitle: get title is time consuming and unstable

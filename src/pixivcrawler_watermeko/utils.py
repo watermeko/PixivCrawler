@@ -1,16 +1,15 @@
-from time import sleep
 from concurrent.futures import ThreadPoolExecutor
 import requests
 from urllib3 import disable_warnings, exceptions
 import re
+from typing import TypedDict,List
 
-# Structure of artwork
-# artwork = {
-#     "title": "",
-#     "user_name": "",
-#     "p_id": "",
-#     "referer": ""
-# }
+class Artwork(TypedDict):
+    title: str
+    user_name: str
+    p_id: str
+    referer: str
+
 HEADERS = {
     "Cookie": "",
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -20,10 +19,9 @@ HEADERS = {
 disable_warnings(exceptions.InsecureRequestWarning)
 
 
-def set_headers(cookie):
+def set_cookie(cookie):
     HEADERS["Cookie"] = cookie
 
-# TODO: retry ability
 def get_title(p_id):
     """
     Get artwork title from p_id
@@ -36,7 +34,7 @@ def get_title(p_id):
 # An artwork has one or more than one pictures
 
 
-def get_image_urls(artwork):
+def get_image_urls(artwork:Artwork):
     res_artwork = requests.get(
         f"https://www.pixiv.net/ajax/illust/{artwork['p_id']}/pages?lang=zh", headers=HEADERS, verify=False)
     artwork_datas = res_artwork.json()["body"]
@@ -50,7 +48,7 @@ retry_list = {}
 # download pictures from an artwork
 
 
-def download_image(artwork, savepath="output/", max_retry=3):
+def download_image(artwork:Artwork, savepath="output/", max_retry=3):
     global retry_list
     # if there's no referer in headers, the pixiv won't return the picture
     download_headers = HEADERS
@@ -79,7 +77,7 @@ def download_image(artwork, savepath="output/", max_retry=3):
         return True
 
 
-def download_images(artworks, savepath):
+def download_images(artworks:List[Artwork], savepath):
     with ThreadPoolExecutor(max_workers=16) as pool:
         for artwork in artworks:
             pool.submit(download_image, artwork, savepath)
